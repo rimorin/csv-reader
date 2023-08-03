@@ -1,0 +1,3 @@
+const DEFAULT_PAGE_SIZES = [50, 100, 1000, 10000];
+
+export { DEFAULT_PAGE_SIZES };
