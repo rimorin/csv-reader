@@ -57,7 +57,6 @@ export async function POST(req: Request) {
     let totalNoOfLines = 0;
     const urlCacheTotal = await redisCachingService.get(totalKey);
     if (urlCacheTotal) {
-      console.log(`cache hit for ${url} with total ${urlCacheTotal} lines`);
       totalNoOfLines = parseInt(urlCacheTotal);
     } else {
       const response = await Axios.get(url);
@@ -69,8 +68,6 @@ export async function POST(req: Request) {
         "EX",
         CACHE_EXPIRY_SECONDS
       );
-
-      console.log(`cache set for ${url} with total ${urlCacheTotal} lines`);
     }
 
     const records: any[] = [];
