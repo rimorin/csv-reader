@@ -9,7 +9,7 @@ import {
 } from "./utils/constants";
 
 export async function POST(req: Request) {
-  const { url, filter, page = 0, limit = 10 } = await req.json();
+  const { url, filter, page = 1, limit = 10 } = await req.json();
 
   const redisCachingService = new Redis({
     host: process.env.REDIS_HOST || "localhost",
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
 
     const records: any[] = [];
 
-    const from = page * limit;
+    const from = (page - 1) * limit;
     const to = from + limit;
 
     const parser = new Parser({
