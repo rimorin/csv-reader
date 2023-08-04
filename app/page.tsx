@@ -25,9 +25,10 @@ export default function Home() {
       const { fileUrl } = await upload.uploadFile(event.target.files[0], {
         onProgress: ({ progress }) => setProgress(progress),
       });
-      setFileUrl(fileUrl);
+
+      alert("File uploaded!\nProceeding to parse the file...");
       localStorage.setItem("fileUrl", fileUrl);
-      alert(`File uploaded!\nProcessing CSV File...`);
+      setFileUrl(fileUrl);
     } catch (e: any) {
       alert(`Error!\n${e.message}`);
     } finally {
@@ -88,12 +89,13 @@ export default function Home() {
         {NavbarMemo}
         <Navbar.Toggle />
         <Navbar.Collapse>
-          <FileInput onChange={onFileSelected} />
+          <FileInput data-testid="fileUpload" onChange={onFileSelected} />
         </Navbar.Collapse>
       </Navbar>
       {progress > 0 && (
         <div className="w-1/2 mx-auto mt-5">
           <Progress
+            data-testid="progress"
             labelProgress
             labelText
             progress={progress}

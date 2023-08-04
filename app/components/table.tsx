@@ -134,12 +134,13 @@ const InvoiceTable = ({ url }: { url: string }) => {
         }),
       });
       const data = await response.json();
-
+      alert(JSON.stringify(data));
       setIsLoading(false);
       if (data.error) {
         setErrorMsg(data.error);
         return;
       }
+      console.log(data.results);
       setData(data.results);
       setPageCount(data.pageCount);
     };

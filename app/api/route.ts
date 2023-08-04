@@ -1,5 +1,5 @@
 import { Parser } from "csv-parse";
-import Axios from "axios";
+import { Axios } from "axios";
 import { Redis } from "ioredis";
 import {
   CACHE_EXPIRY_SECONDS,
@@ -7,6 +7,7 @@ import {
   MANDATORY_HEADERS,
   STREAM_TIMEOUT_MS,
 } from "./utils/constants";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const { url, filter, page = 1, limit = 10 } = await req.json();
@@ -21,10 +22,10 @@ export async function POST(req: Request) {
   try {
     // check if url is valid
     if (!url) {
-      return new Response(
-        JSON.stringify({
+      return NextResponse.json(
+        {
           error: "url is required",
-        }),
+        },
         {
           status: 400,
           headers: DEFAULT_RESPONSE_HEADERS,
@@ -34,10 +35,10 @@ export async function POST(req: Request) {
 
     // check if limit is valid
     if (!limit || limit < 0) {
-      return new Response(
-        JSON.stringify({
+      return NextResponse.json(
+        {
           error: "limit is required and should be greater than 0",
-        }),
+        },
         {
           status: 400,
           headers: DEFAULT_RESPONSE_HEADERS,
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
     const responseKey = `${url}-${page}-${limit}-${filter}`;
     const cacheResponse = await redisCachingService.get(responseKey);
     if (cacheResponse) {
-      return new Response(cacheResponse, {
+      return NextResponse.json(JSON.parse(cacheResponse), {
         headers: DEFAULT_RESPONSE_HEADERS,
       });
     }
@@ -106,10 +107,10 @@ export async function POST(req: Request) {
 
     // check if records are present
     if (records.length === 0) {
-      return new Response(
-        JSON.stringify({
+      return NextResponse.json(
+        {
           error: "No records found",
-        }),
+        },
         {
           status: 404,
           headers: DEFAULT_RESPONSE_HEADERS,
@@ -122,10 +123,10 @@ export async function POST(req: Request) {
       Object.keys(records[0]).includes(header)
     );
     if (!isMandatoryHeadersPresent) {
-      return new Response(
-        JSON.stringify({
+      return NextResponse.json(
+        {
           error: "Mandatory headers are missing",
-        }),
+        },
         {
           status: 400,
           headers: DEFAULT_RESPONSE_HEADERS,
@@ -133,29 +134,27 @@ export async function POST(req: Request) {
       );
     }
 
-    const responseData = JSON.stringify({
+    const responseData = {
       results: records,
       pageCount:
         totalNoOfLines % limit === 0
           ? totalNoOfLines / limit
           : Math.floor(totalNoOfLines / limit) + 1,
-    });
+    };
 
     await redisCachingService.set(
       responseKey,
-      responseData,
+      JSON.stringify(responseData),
       "EX",
       CACHE_EXPIRY_SECONDS
     );
 
-    return new Response(responseData, {
-      headers: DEFAULT_RESPONSE_HEADERS,
-    });
-  } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: "Something went wrong",
-      }),
+    return NextResponse.json(responseData);
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        error: error.message || "Internal server error",
+      },
       {
         status: 500,
         headers: DEFAULT_RESPONSE_HEADERS,
