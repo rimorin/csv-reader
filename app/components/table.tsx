@@ -214,7 +214,7 @@ const InvoiceTable = ({ url }: { url: string }) => {
       </div>
       <Navbar fluid rounded>
         <Navbar.Brand>
-          <span className="font-normal text-gray-500 dark:text-gray-400 m-auto">
+          <span className="font-normal text-gray-500 dark:text-gray-400 m-auto text-sm">
             Page{" "}
             <span className="font-semibold text-gray-900 dark:text-white">
               {table.getState().pagination.pageIndex}
