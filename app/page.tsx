@@ -13,10 +13,9 @@ export default function Home() {
   const [fileUrl, setFileUrl] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
 
-  const isMissingUploadAPIKey = !process.env.NEXT_PUBLIC_UPLOAD_IO_API_KEY;
-
   const onFileSelected = async (event: any) => {
     try {
+      // check if the file is a CSV file
       if (!event.target.files[0].name.endsWith(".csv")) {
         alert("Please upload a CSV file!");
         return;
@@ -27,6 +26,7 @@ export default function Home() {
       });
 
       alert("File uploaded!\nProceeding to parse the file...");
+      // save the fileUrl to localStorage so that we can retrieve it on page load
       localStorage.setItem("fileUrl", fileUrl);
       setFileUrl(fileUrl);
     } catch (e: any) {
@@ -76,9 +76,14 @@ export default function Home() {
   );
 
   useEffect(() => {
+    // on page load, check if there's a fileUrl in localStorage. If there is, proceed to parse the file
     setFileUrl(localStorage.getItem("fileUrl") || "");
   }, []);
 
+  const isMissingUploadAPIKey = !process.env.NEXT_PUBLIC_UPLOAD_IO_API_KEY;
+  const isFileUploading = progress > 0;
+
+  // if the UPLOAD_IO_API_KEY is missing, show the APIMissing component
   if (isMissingUploadAPIKey) {
     return APIMissing;
   }
@@ -89,10 +94,14 @@ export default function Home() {
         {NavbarMemo}
         <Navbar.Toggle />
         <Navbar.Collapse>
-          <FileInput data-testid="fileUpload" onChange={onFileSelected} />
+          <FileInput
+            disabled={isFileUploading}
+            data-testid="fileUpload"
+            onChange={onFileSelected}
+          />
         </Navbar.Collapse>
       </Navbar>
-      {progress > 0 && (
+      {isFileUploading && (
         <div className="w-1/2 mx-auto mt-5">
           <Progress
             data-testid="progress"

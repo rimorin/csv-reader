@@ -40,14 +40,14 @@ export async function POST(req: Request) {
     }
 
     // check if limit is valid
-    if (!limit || limit < 0) {
+    if (limit < 0) {
       return generateNextResponse(
         { error: "limit should be greater than 0" },
         400
       );
     }
 
-    if (!limit || limit > DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]) {
+    if (limit > DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]) {
       return generateNextResponse(
         {
           error: `limit should be less than or equal to ${
@@ -66,12 +66,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // check if cache for the url, page, limit and filter is present
     const responseKey = `${url}-${page}-${limit}-${filter}`;
     const cacheResponse = await redisCachingService.get(responseKey);
     if (cacheResponse) {
       return generateNextResponse(JSON.parse(cacheResponse));
     }
 
+    // check if total number of lines for the csv remote file is present in cache
     const totalKey = `${url}-total`;
     let totalNoOfLines = 0;
     const urlCacheTotal = await redisCachingService.get(totalKey);
@@ -81,6 +83,7 @@ export async function POST(req: Request) {
       const response = await Axios.get(url);
       const csvString = response.data;
       totalNoOfLines = csvString.split("\n").length - 1;
+      // this is a memory intensive operation. So, cache the total number of lines for the csv remote file
       await redisCachingService.set(
         totalKey,
         totalNoOfLines.toString(),
@@ -101,6 +104,7 @@ export async function POST(req: Request) {
       from: from,
       to: to,
       on_record(record, _) {
+        // if filter is not present, return all records
         if (!filter) return record;
         const isFilterValuePresentInRecord =
           Object.values(record).findIndex(
@@ -147,6 +151,7 @@ export async function POST(req: Request) {
           : Math.floor(totalNoOfLines / limit) + 1,
     };
 
+    // cache response for future use. Cache will expire in 1 hour
     await redisCachingService.set(
       responseKey,
       JSON.stringify(responseData),
