@@ -1,5 +1,3 @@
-// function to return NextResponse
-
 import { NextResponse } from "next/server";
 import { DEFAULT_RESPONSE_HEADERS } from "./constants";
 
