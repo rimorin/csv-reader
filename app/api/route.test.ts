@@ -85,7 +85,7 @@ describe("POST /api/route", () => {
       },
     } as any)) as NextResponse;
     const error = await response.json();
-    expect(error.error).toBe("page is required and should be greater than 0");
+    expect(error.error).toBe("page should be greater than 0");
     expect(response.status).toBe(400);
   });
 });
