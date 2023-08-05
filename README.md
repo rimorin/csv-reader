@@ -1,5 +1,11 @@
 CSV Invoice Reader
 
+Working Demo: https://csv-reader-khaki.vercel.app/
+
+## Description
+
+This is a web application that allows users to upload invoice CSV file and view the data in a table. The application is built with Next.js and uses Upload.IO to upload files to the cloud and Redis to cache the API response.
+
 ## Getting Started
 
 1. Clone the repo
@@ -68,6 +74,7 @@ Deploy the project. Vercel will automatically deploy the frontend and backend. T
 
 ## Future Improvements
 
-- Add more unit tests for backend
+- Add integration tests
+- Add more detailed tests for backend
 - Sorting for table
 - Column based filtering for table
