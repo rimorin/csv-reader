@@ -25,9 +25,6 @@ git clone
 cd csv-invoice-reader
 npm install
 npm run dev
-# or
-yarn
-yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -72,6 +69,18 @@ Retrieve invoice csv file from [Kaggle](https://www.kaggle.com/carrie1/ecommerce
 - CSV Parse is used to parse the CSV invoice file. It allows for streaming of the csv file and for the file to be processed in chunks. This allows for the file to be processed faster and for the API to be more scalable.
 
 - React Table is used to display the data in a table. It includes mechanisms for pagination. The frontend will send the page, limit and filter parameters to the backend. The backend will then process the file and return the data. The frontend will then display the data in a table.
+
+## Testing
+
+Unit tests are written for the backend API and frontend components. The unit tests for the backend API are written with Jest. The unit tests for the frontend components are written with React Testing Library.
+
+Test files are indicated with the `.test.ts` extension.
+
+To run the unit tests, run the following command:
+
+```bash
+npm run test
+```
 
 ## Deploy on Production
 
