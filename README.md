@@ -1,6 +1,9 @@
-CSV Invoice Reader
-
+# CSV Invoice Reader
 Working Demo: https://csv-reader-khaki.vercel.app/
+
+
+<img width="1291" alt="Screenshot 2023-08-05 at 3 17 28 PM" src="https://github.com/rimorin/csv_reader/assets/40650158/d562d85e-7cbd-4db0-87d8-7d119080b64d">
+
 
 ## Description
 
