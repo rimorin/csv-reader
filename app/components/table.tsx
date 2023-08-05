@@ -27,7 +27,7 @@ const InvoiceTable = ({ url }: { url: string }) => {
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 1,
-    pageSize: DEFAULT_PAGE_SIZES[2],
+    pageSize: DEFAULT_PAGE_SIZES[1],
   });
 
   const pagination = useMemo(
@@ -134,13 +134,11 @@ const InvoiceTable = ({ url }: { url: string }) => {
         }),
       });
       const data = await response.json();
-      alert(JSON.stringify(data));
       setIsLoading(false);
       if (data.error) {
         setErrorMsg(data.error);
         return;
       }
-      console.log(data.results);
       setData(data.results);
       setPageCount(data.pageCount);
     };
@@ -175,7 +173,7 @@ const InvoiceTable = ({ url }: { url: string }) => {
               <Table.HeadCell
                 key={header.id}
                 colSpan={header.colSpan}
-                className="px-2 py-4 text-center"
+                className="px-2 py-4"
               >
                 {header.isPlaceholder ? null : (
                   <div>
@@ -237,18 +235,18 @@ const InvoiceTable = ({ url }: { url: string }) => {
             min={1}
             max={table.getPageCount()}
             onChange={functionDebouncer((e: any) => {
-              const page = Number(e.target.value);
-
-              if (page < 1) {
-                table.setPageIndex(1);
-                return;
+              const pageInput = Number(e.target.value);
+              let page = pageInput;
+              if (pageInput < 1) {
+                page = 1;
               }
-
-              if (page > table.getPageCount()) {
-                table.setPageIndex(table.getPageCount());
-                return;
+              if (pageInput > table.getPageCount()) {
+                page = table.getPageCount();
               }
-              table.setPageIndex(page);
+              table.setPagination((existing) => ({
+                ...existing,
+                pageIndex: page,
+              }));
             }, DEBOUNCE_DELAY_MS)}
           />
           <TextInput
@@ -265,11 +263,10 @@ const InvoiceTable = ({ url }: { url: string }) => {
             className="mt-1"
             value={table.getState().pagination.pageSize}
             onChange={(e) =>
-              table.setPagination((old) => ({
-                ...old,
+              table.setPagination({
                 pageIndex: 1,
                 pageSize: Number(e.target.value),
-              }))
+              })
             }
           >
             {DEFAULT_PAGE_SIZES.map((pageSize) => (
@@ -280,9 +277,12 @@ const InvoiceTable = ({ url }: { url: string }) => {
           </Select>
           <Pagination
             currentPage={table.getState().pagination.pageIndex}
-            onPageChange={(page) => {
-              table.setPageIndex(page);
-            }}
+            onPageChange={(page) =>
+              table.setPagination((existing) => ({
+                ...existing,
+                pageIndex: page,
+              }))
+            }
             showIcons
             totalPages={table.getPageCount()}
           />
