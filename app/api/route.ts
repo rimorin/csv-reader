@@ -3,16 +3,20 @@ import Axios from "axios";
 import { Redis } from "ioredis";
 import {
   CACHE_EXPIRY_SECONDS,
-  DEFAULT_RESPONSE_HEADERS,
+  DEFAULT_INITIAL_PAGE,
   MANDATORY_HEADERS,
   STREAM_TIMEOUT_MS,
 } from "./utils/constants";
-import { NextResponse } from "next/server";
 import { DEFAULT_PAGE_SIZES } from "../utils/constants";
 import { generateNextResponse } from "./utils/helpers";
 
 export async function POST(req: Request) {
-  const { url, filter, page = 1, limit = 10 } = await req.json();
+  const {
+    url,
+    filter,
+    page = DEFAULT_INITIAL_PAGE,
+    limit = DEFAULT_PAGE_SIZES[1],
+  } = await req.json();
 
   const redisCachingService = new Redis({
     host: process.env.REDIS_HOST || "localhost",
@@ -24,39 +28,48 @@ export async function POST(req: Request) {
   try {
     // check if url is valid
     if (!url) {
-      return generateNextResponse("url is required", 400);
+      return generateNextResponse({ error: "url is required" }, 400);
     }
 
     // check if url contains link to csv file
     if (!url.endsWith(".csv")) {
-      return generateNextResponse("url should be a link to csv file", 400);
+      return generateNextResponse(
+        { error: "url should be a link to csv file" },
+        400
+      );
     }
 
     // check if limit is valid
     if (!limit || limit < 0) {
-      return generateNextResponse("limit should be greater than 0", 400);
+      return generateNextResponse(
+        { error: "limit should be greater than 0" },
+        400
+      );
     }
 
     if (!limit || limit > DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]) {
       return generateNextResponse(
-        `limit should be less than or equal to ${
-          DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]
-        }`,
+        {
+          error: `limit should be less than or equal to ${
+            DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]
+          }`,
+        },
         400
       );
     }
 
     // check if page is valid
     if (page < 1) {
-      return generateNextResponse("page should be greater than 0", 400);
+      return generateNextResponse(
+        { error: "page should be greater than 0" },
+        400
+      );
     }
 
     const responseKey = `${url}-${page}-${limit}-${filter}`;
     const cacheResponse = await redisCachingService.get(responseKey);
     if (cacheResponse) {
-      return NextResponse.json(JSON.parse(cacheResponse), {
-        headers: DEFAULT_RESPONSE_HEADERS,
-      });
+      return generateNextResponse(JSON.parse(cacheResponse));
     }
 
     const totalKey = `${url}-total`;
@@ -112,7 +125,7 @@ export async function POST(req: Request) {
 
     // check if records are present
     if (records.length === 0) {
-      return generateNextResponse("No records found", 404);
+      return generateNextResponse({ error: "No records found" }, 404);
     }
 
     // check if mandatory headers are present
@@ -120,7 +133,10 @@ export async function POST(req: Request) {
       Object.keys(records[0]).includes(header)
     );
     if (!isMandatoryHeadersPresent) {
-      return generateNextResponse("Mandatory headers are missing", 400);
+      return generateNextResponse(
+        { error: "Mandatory headers are missing" },
+        400
+      );
     }
 
     const responseData = {
@@ -138,9 +154,12 @@ export async function POST(req: Request) {
       CACHE_EXPIRY_SECONDS
     );
 
-    return NextResponse.json(responseData);
+    return generateNextResponse(responseData);
   } catch (error: any) {
-    return generateNextResponse(error.message || "Internal server error", 500);
+    return generateNextResponse(
+      { error: error.message || "Internal server error" },
+      500
+    );
   } finally {
     redisCachingService.disconnect();
   }

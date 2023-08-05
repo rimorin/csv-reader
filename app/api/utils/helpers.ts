@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
 import { DEFAULT_RESPONSE_HEADERS } from "./constants";
 
-const generateNextResponse = (error: string, status: number) => {
-  return NextResponse.json(
-    {
-      error,
-    },
-    {
-      status,
-      headers: DEFAULT_RESPONSE_HEADERS,
-    }
-  );
+const generateNextResponse = (body: object, status = 200) => {
+  return NextResponse.json(body, {
+    status,
+    headers: DEFAULT_RESPONSE_HEADERS,
+  });
 };
 
 export { generateNextResponse };
