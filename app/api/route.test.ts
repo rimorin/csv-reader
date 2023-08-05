@@ -17,7 +17,7 @@ jest.mock("ioredis", () => {
   };
 });
 
-describe("GET /api/route", () => {
+describe("POST /api/route", () => {
   it("test missing url", async () => {
     const response = (await POST({
       json: () => {
@@ -53,7 +53,7 @@ describe("GET /api/route", () => {
       },
     } as any)) as NextResponse;
     const error = await response.json();
-    expect(error.error).toBe("limit is required and should be greater than 0");
+    expect(error.error).toBe("limit should be greater than 0");
     expect(response.status).toBe(400);
   });
   it("test max limit", async () => {
@@ -66,7 +66,11 @@ describe("GET /api/route", () => {
       },
     } as any)) as NextResponse;
     const error = await response.json();
-    expect(error.error).toBe("limit is required and should be greater than 0");
+    expect(error.error).toBe(
+      `limit should be less than or equal to ${
+        DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]
+      }`
+    );
     expect(response.status).toBe(400);
   });
 

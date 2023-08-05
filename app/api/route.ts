@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     if (!limit || limit < 0) {
       return NextResponse.json(
         {
-          error: "limit is required and should be greater than 0",
+          error: "limit should be greater than 0",
         },
         {
           status: 400,
@@ -63,7 +63,9 @@ export async function POST(req: Request) {
     if (!limit || limit > DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]) {
       return NextResponse.json(
         {
-          error: "limit is required and should be greater than 0",
+          error: `limit should be less than or equal to ${
+            DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]
+          }`,
         },
         {
           status: 400,
