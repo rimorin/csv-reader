@@ -1,5 +1,5 @@
 import { Parser } from "csv-parse";
-import { Axios } from "axios";
+import Axios from "axios";
 import { Redis } from "ioredis";
 import {
   CACHE_EXPIRY_SECONDS,
@@ -8,6 +8,7 @@ import {
   STREAM_TIMEOUT_MS,
 } from "./utils/constants";
 import { NextResponse } from "next/server";
+import { DEFAULT_PAGE_SIZES } from "../utils/constants";
 
 export async function POST(req: Request) {
   const { url, filter, page = 1, limit = 10 } = await req.json();
@@ -33,11 +34,49 @@ export async function POST(req: Request) {
       );
     }
 
+    // check if url contains link to csv file
+    if (!url.endsWith(".csv")) {
+      return NextResponse.json(
+        {
+          error: "url should be a link to csv file",
+        },
+        {
+          status: 400,
+          headers: DEFAULT_RESPONSE_HEADERS,
+        }
+      );
+    }
+
     // check if limit is valid
     if (!limit || limit < 0) {
       return NextResponse.json(
         {
           error: "limit is required and should be greater than 0",
+        },
+        {
+          status: 400,
+          headers: DEFAULT_RESPONSE_HEADERS,
+        }
+      );
+    }
+
+    if (!limit || limit > DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1]) {
+      return NextResponse.json(
+        {
+          error: "limit is required and should be greater than 0",
+        },
+        {
+          status: 400,
+          headers: DEFAULT_RESPONSE_HEADERS,
+        }
+      );
+    }
+
+    // check if page is valid
+    if (page < 1) {
+      return NextResponse.json(
+        {
+          error: "page is required and should be greater than 0",
         },
         {
           status: 400,

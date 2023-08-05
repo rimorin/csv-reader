@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest --watch"
+    "test": "jest --watchAll --verbose"
   },
   "dependencies": {
     "@tanstack/react-table": "^8.9.3",
