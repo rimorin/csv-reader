@@ -120,27 +120,31 @@ const InvoiceTable = ({ url }: { url: string }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
-      const response = await fetch("api", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          page: pageIndex,
-          limit: pageSize,
-          url: url,
-          filter: filter,
-        }),
-      });
-      const data = await response.json();
-      setIsLoading(false);
-      if (data.error) {
-        setErrorMsg(data.error);
-        return;
+      const params = new URLSearchParams();
+      params.append("url", url);
+      params.append("page", pageIndex.toString());
+      params.append("limit", pageSize.toString());
+      params.append("filter", filter);
+      const endpoint = `/api?${params.toString()}`;
+      try {
+        setIsLoading(true);
+        const response = await fetch(endpoint, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (data.error) {
+          setErrorMsg(data.error);
+          return;
+        }
+        setData(data.results);
+        setPageCount(data.pageCount);
+      } catch (error: any) {
+        setErrorMsg(error.message || "Internal server error");
+      } finally {
+        setIsLoading(false);
       }
-      setData(data.results);
-      setPageCount(data.pageCount);
     };
     fetchData();
   }, [pageIndex, pageSize, filter, url]);

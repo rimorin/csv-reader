@@ -12,6 +12,7 @@ const MANDATORY_HEADERS = [
   "Country",
 ];
 const DEFAULT_INITIAL_PAGE = 1;
+const DUMMY_URL_FOR_TESTING = "https://www.whatever.com";
 
 export {
   STREAM_TIMEOUT_MS,
@@ -19,4 +20,5 @@ export {
   CACHE_EXPIRY_SECONDS,
   MANDATORY_HEADERS,
   DEFAULT_INITIAL_PAGE,
+  DUMMY_URL_FOR_TESTING,
 };

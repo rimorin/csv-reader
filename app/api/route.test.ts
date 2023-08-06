@@ -1,7 +1,8 @@
 /** @jest-environment node */
 import { NextResponse } from "next/server";
-import { POST } from "./route";
+import { GET } from "./route";
 import { DEFAULT_PAGE_SIZES } from "../utils/constants";
+import { generateNextRequest } from "./utils/helpers";
 
 jest.mock("axios");
 jest.mock("ioredis", () => {
@@ -17,54 +18,43 @@ jest.mock("ioredis", () => {
   };
 });
 
-describe("POST /api/route", () => {
+describe("GET /api", () => {
   it("test missing url", async () => {
-    const response = (await POST({
-      json: () => {
-        return {
-          url: "",
-        };
-      },
-    } as any)) as NextResponse;
+    const response = (await GET(
+      generateNextRequest({ url: "" })
+    )) as NextResponse;
+
     const error = await response.json();
     expect(error.error).toBe("url is required");
     expect(response.status).toBe(400);
   });
   it("test invalid url", async () => {
-    const response = (await POST({
-      json: () => {
-        return {
-          url: "https://www.google.com",
-        };
-      },
-    } as any)) as NextResponse;
+    const response = (await GET(
+      generateNextRequest({ url: "https://www.google.com" })
+    )) as NextResponse;
     const error = await response.json();
     expect(error.error).toBe("url should be a link to csv file");
     expect(response.status).toBe(400);
   });
   // test missing limit
   it("test minimum limit", async () => {
-    const response = (await POST({
-      json: () => {
-        return {
-          url: "https://www.google.com/dummy.csv",
-          limit: -1,
-        };
-      },
-    } as any)) as NextResponse;
+    const response = (await GET(
+      generateNextRequest({
+        url: "https://www.google.com/dummy.csv",
+        limit: -1,
+      })
+    )) as NextResponse;
     const error = await response.json();
     expect(error.error).toBe("limit should be greater than 0");
     expect(response.status).toBe(400);
   });
   it("test max limit", async () => {
-    const response = (await POST({
-      json: () => {
-        return {
-          url: "https://www.google.com/dummy.csv",
-          limit: DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1] + 1,
-        };
-      },
-    } as any)) as NextResponse;
+    const response = (await GET(
+      generateNextRequest({
+        url: "https://www.google.com/dummy.csv",
+        limit: DEFAULT_PAGE_SIZES[DEFAULT_PAGE_SIZES.length - 1] + 1,
+      })
+    )) as NextResponse;
     const error = await response.json();
     expect(error.error).toBe(
       `limit should be less than or equal to ${
@@ -76,14 +66,12 @@ describe("POST /api/route", () => {
 
   // check if page is invalid
   it("test invalid page", async () => {
-    const response = (await POST({
-      json: () => {
-        return {
-          url: "https://www.google.com/dummy.csv",
-          page: 0,
-        };
-      },
-    } as any)) as NextResponse;
+    const response = (await GET(
+      generateNextRequest({
+        url: "https://www.google.com/dummy.csv",
+        page: 0,
+      })
+    )) as NextResponse;
     const error = await response.json();
     expect(error.error).toBe("page should be greater than 0");
     expect(response.status).toBe(400);

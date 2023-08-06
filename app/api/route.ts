@@ -9,14 +9,18 @@ import {
 } from "./utils/constants";
 import { DEFAULT_PAGE_SIZES } from "../utils/constants";
 import { generateNextResponse } from "./utils/helpers";
+import { NextRequest } from "next/server";
 
-export async function POST(req: Request) {
-  const {
-    url,
-    filter,
-    page = DEFAULT_INITIAL_PAGE,
-    limit = DEFAULT_PAGE_SIZES[1],
-  } = await req.json();
+export async function GET(req: NextRequest) {
+  const parameters = req.nextUrl.searchParams;
+  const url = parameters.get("url");
+  const limit = parseInt(
+    parameters.get("limit") || DEFAULT_PAGE_SIZES[1].toString()
+  );
+  const page = parseInt(
+    parameters.get("page") || DEFAULT_INITIAL_PAGE.toString()
+  );
+  const filter = parameters.get("filter");
 
   const redisCachingService = new Redis({
     host: process.env.REDIS_HOST || "localhost",
